@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>N-Queen Visualizer</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #1e293b;
+    color: white;
+    text-align: center;
+}
+
+.controls { margin: 15px; }
+
+button, input {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+button {
+    background: #22c55e;
+    color: white;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+#board {
+    display: grid;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+}
+
+.white { background: #f0d9b5; }
+.black { background: #b58863; }
+
+.cell:hover {
+    outline: 2px solid yellow;
+}
+
+.queen {
+    color: black;
+}
+
+.current {
+    outline: 3px solid red;
+}
+
+#info {
+    width: 300px;
+    background: #0f172a;
+    padding: 15px;
+    text-align: left;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>👑 N-Queen Debug Visualizer</h1>
+
+<div class="controls">
+    N: <input type="number" id="size" value="8" min="4" max="12">
+    <button onclick="init()">Initialize</button>
+    <button onclick="nextStep()">Next</button>
+    <button onclick="prevStep()">Previous</button>
+    <button onclick="resetBoard()">Reset</button>
+</div>
+
+<div id="container">
+    <div id="board"></div>
+
+    <div id="info">
+        <p id="desc">Click Initialize</p>
+        <p><b>Total Solutions:</b> <span id="total">-</span></p>
+        <p><b>Solutions Found:</b> <span id="found">0</span></p>
+    </div>
+</div>
+
+<script>
+let N = 8;
+let board = [];
+let stack = [];
+let history = [];
+let solutions = 0;
+
+const solutionCount = {
+    4:2, 5:10, 6:4, 7:40, 8:92, 9:352, 10:724, 11:2680, 12:14200
+};
+
+function createBoard() {
+    const boardDiv = document.getElementById("board");
+    boardDiv.innerHTML = "";
+    boardDiv.style.gridTemplateColumns = `repeat(${N}, 60px)`;
+
+    for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.id = `cell-${r}-${c}`;
+
+            if ((r + c) % 2 == 0) cell.classList.add("white");
+            else cell.classList.add("black");
+
+            boardDiv.appendChild(cell);
+        }
+    }
+}
+
+function drawBoard(current = null) {
+    document.querySelectorAll(".cell").forEach(c => {
+        c.innerHTML = "";
+        c.classList.remove("current");
+    });
+
+    for (let r = 0; r < N; r++) {
+        if (board[r] !== -1) {
+            document.getElementById(`cell-${r}-${board[r]}`).innerHTML = "♛";
+        }
+    }
+
+    if (current) {
+        document.getElementById(`cell-${current.row}-${current.col}`).classList.add("current");
+    }
+}
+
+function isSafe(row, col) {
+    for (let i = 0; i < row; i++) {
+        let pc = board[i];
+        if (pc === col || pc - i === col - row || pc + i === col + row)
+            return false;
+    }
+    return true;
+}
+
+function saveState() {
+    history.push({
+        board: [...board],
+        stack: JSON.parse(JSON.stringify(stack)),
+        solutions: solutions
+    });
+}
+
+function init() {
+    N = parseInt(document.getElementById("size").value);
+
+    board = new Array(N).fill(-1);
+    stack = [{row:0, col:0}];
+    history = [];
+    solutions = 0;
+
+    createBoard();
+    drawBoard();
+    saveState();
+
+    document.getElementById("total").innerText = solutionCount[N] || "Unknown";
+    document.getElementById("found").innerText = solutions;
+    document.getElementById("desc").innerText = "Initialized. Click Next.";
+}
+
+function backtrackOnce() {
+    // Remove queen from current row (if any), then pop the frame and remove queen from previous row
+    // so it can try the next column.
+    if (stack.length === 0) return null;
+
+    let currentRow = stack[stack.length - 1].row;
+    if (currentRow >= 0 && currentRow < N) board[currentRow] = -1;
+
+    stack.pop();
+
+    if (stack.length === 0) return null;
+
+    let prevRow = stack[stack.length - 1].row;
+    let removedCol = board[prevRow];
+    board[prevRow] = -1;
+
+    return { row: prevRow, col: removedCol };
+}
+
+function nextStep() {
+
+    if (stack.length === 0) {
+        document.getElementById("desc").innerText = "Finished!";
+        return;
+    }
+
+    saveState();
+
+    let highlight = null;
+
+    while (true) {
+        if (stack.length === 0) {
+            document.getElementById("desc").innerText = "Finished!";
+            break;
+        }
+
+        let top = stack[stack.length - 1];
+        let row = top.row;
+        let col = top.col;
+
+        // If this row has no columns left, backtrack immediately (same click).
+        if (col >= N) {
+            let removed = backtrackOnce();
+
+            if (removed === null) {
+                document.getElementById("desc").innerText = "Finished!";
+                highlight = null;
+            } else {
+                document.getElementById("desc").innerText = `↩️ Backtracking to row ${removed.row}`;
+                if (removed.col !== -1) highlight = { row: removed.row, col: removed.col };
+            }
+
+            break;
+        }
+
+        // Try next column in current row.
+        top.col++; // move to next col next time
+        highlight = { row, col };
+
+        // If we're revisiting the same row (e.g., after finding a solution), clear the old queen first.
+        if (board[row] !== -1) board[row] = -1;
+
+        if (isSafe(row, col)) {
+            board[row] = col;
+
+            if (row === N - 1) {
+                solutions++;
+                document.getElementById("found").innerText = solutions;
+                document.getElementById("desc").innerText = "✅ Solution Found!";
+            } else {
+                document.getElementById("desc").innerText = `Placed at (${row}, ${col})`;
+                stack.push({row: row + 1, col: 0});
+            }
+
+            break;
+        }
+
+        // Not safe at (row, col). If this was the last column, backtrack right now.
+        document.getElementById("desc").innerText = `❌ Not safe at (${row}, ${col})`;
+        if (top.col >= N) {
+            document.getElementById("desc").innerText = `❌ Row ${row} stuck. Backtracking...`;
+            continue;
+        }
+
+        break;
+    }
+
+    drawBoard(highlight);
+}
+
+function prevStep() {
+    if (history.length <= 1) return;
+
+    history.pop();
+
+    let prev = history[history.length - 1];
+
+    board = [...prev.board];
+    stack = JSON.parse(JSON.stringify(prev.stack));
+    solutions = prev.solutions;
+
+    document.getElementById("found").innerText = solutions;
+
+    drawBoard();
+    document.getElementById("desc").innerText = "⏮️ Previous Step";
+}
+
+function resetBoard() {
+    N = parseInt(document.getElementById("size").value);
+    board = new Array(N).fill(-1);
+    stack = [];
+    history = [];
+    solutions = 0;
+
+    createBoard();
+    drawBoard();
+
+    document.getElementById("desc").innerText = "Reset done. Click Initialize.";
+    document.getElementById("found").innerText = solutions;
+    document.getElementById("total").innerText = "-";
+}
+
+createBoard();
+</script>
+
+</body>
+</html>
