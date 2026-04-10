@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -67,6 +67,13 @@ button {
     padding: 15px;
     text-align: left;
     border-radius: 10px;
+}
+.footer {
+    color: white;
+    text-align: center;
+}
+#desc {
+    white-space: pre-line;
 }
 </style>
 </head>
@@ -141,12 +148,35 @@ function drawBoard(current = null) {
 }
 
 function isSafe(row, col) {
+    let reasons = [];
+
     for (let i = 0; i < row; i++) {
         let pc = board[i];
-        if (pc === col || pc - i === col - row || pc + i === col + row)
-            return false;
+
+        // Column attack
+        if (pc === col) {
+            reasons.push(
+                `Column attack by queen at (${i+1}, ${pc+1}) → (${row+1}, ${col+1})`
+            );
+        }
+
+        // Left diagonal
+        if (pc - i === col - row) {
+            reasons.push(
+                `Left diagonal attack by (${i+1}, ${pc+1}) → (${row+1}, ${col+1}) \n|${pc}-${i}| = |${col}-${row}|`
+            );
+        }
+
+        // Right diagonal
+        if (pc + i === col + row) {
+            reasons.push(
+                `Right diagonal attack by (${i+1}, ${pc+1}) → (${row+1}, ${col+1})`
+            );
+        }
     }
-    return true;
+
+    if (reasons.length === 0) return { safe: true };
+    return { safe: false, reasons: reasons };
 }
 
 function saveState() {
@@ -222,7 +252,7 @@ function nextStep() {
                 document.getElementById("desc").innerText = "Finished!";
                 highlight = null;
             } else {
-                document.getElementById("desc").innerText = `↩️ Backtracking to row ${removed.row}`;
+                document.getElementById("desc").innerText = `↩️ Backtracking to row ${removed.row+1}`;
                 if (removed.col !== -1) highlight = { row: removed.row, col: removed.col };
             }
 
@@ -235,8 +265,10 @@ function nextStep() {
 
         // If we're revisiting the same row (e.g., after finding a solution), clear the old queen first.
         if (board[row] !== -1) board[row] = -1;
+        
+        let result = isSafe(row, col);
 
-        if (isSafe(row, col)) {
+        if (result.safe) {
             board[row] = col;
 
             if (row === N - 1) {
@@ -244,7 +276,7 @@ function nextStep() {
                 document.getElementById("found").innerText = solutions;
                 document.getElementById("desc").innerText = "✅ Solution Found!";
             } else {
-                document.getElementById("desc").innerText = `Placed at (${row}, ${col})`;
+                document.getElementById("desc").innerText = `Placed at (${row+1}, ${col+1})`;
                 stack.push({row: row + 1, col: 0});
             }
 
@@ -252,7 +284,8 @@ function nextStep() {
         }
 
         // Not safe at (row, col). If this was the last column, backtrack right now.
-        document.getElementById("desc").innerText = `❌ Not safe at (${row}, ${col})`;
+        document.getElementById("desc").innerText =
+    `❌ Not safe at (${row+1}, ${col+1})\n` + result.reasons.join("\n");
         if (top.col >= N) {
             document.getElementById("desc").innerText = `❌ Row ${row} stuck. Backtracking...`;
             continue;
@@ -297,6 +330,10 @@ function resetBoard() {
 }
 createBoard();
 </script>
+
+<footer class="footer">
+    <p>© 2026 N-Queen Visualizer | Developed by Aditi Nikam, Navami Bhat, Yogita Patil, Shrutika Kadam</p>
+</footer>
 
 </body>
 </html>
