@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+=======
 ﻿<!DOCTYPE html>
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -68,13 +72,51 @@ button {
     text-align: left;
     border-radius: 10px;
 }
+<<<<<<< HEAD
+
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 .footer {
     color: white;
     text-align: center;
 }
+<<<<<<< HEAD
+
 #desc {
     white-space: pre-line;
 }
+
+/* ✅ ADDED: solution boards */
+#solutionsContainer {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.solution-board {
+    display: grid;
+    border: 2px solid white;
+}
+
+.solution-cell {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sol-white { background: #f0d9b5; }
+.sol-black { background: #b58863; }
+
+=======
+#desc {
+    white-space: pre-line;
+}
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 </style>
 </head>
 
@@ -88,6 +130,13 @@ button {
     <button onclick="nextStep()">Next</button>
     <button onclick="prevStep()">Previous</button>
     <button onclick="resetBoard()">Reset</button>
+<<<<<<< HEAD
+
+    <button onclick="startAuto()"> Auto Play</button>
+    <button onclick="stopAuto()"> Stop</button>
+    <button onclick="showSolutions()">Show All Solutions</button>
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 </div>
 
 <div id="container">
@@ -100,6 +149,12 @@ button {
     </div>
 </div>
 
+<<<<<<< HEAD
+
+<div id="solutionsContainer"></div>
+
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 <script>
 let N = 8;
 let board = [];
@@ -107,6 +162,12 @@ let stack = [];
 let history = [];
 let solutions = 0;
 
+<<<<<<< HEAD
+let autoPlayInterval = null;
+let allSolutions = [];
+
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 const solutionCount = {
     4:2, 5:10, 6:4, 7:40, 8:92, 9:352, 10:724, 11:2680, 12:14200
 };
@@ -153,6 +214,18 @@ function isSafe(row, col) {
     for (let i = 0; i < row; i++) {
         let pc = board[i];
 
+<<<<<<< HEAD
+        if (pc === col) {
+            reasons.push(`Column attack by queen at (${i+1}, ${pc+1}) → (${row+1}, ${col+1})`);
+        }
+
+        if (pc - i === col - row) {
+            reasons.push(`Left diagonal attack by (${i+1}, ${pc+1}) → (${row+1}, ${col+1}) \n|${pc}-${i}| = |${col}-${row}|`);
+        }
+
+        if (pc + i === col + row) {
+            reasons.push(`Right diagonal attack by (${i+1}, ${pc+1}) → (${row+1}, ${col+1})`);
+=======
         // Column attack
         if (pc === col) {
             reasons.push(
@@ -172,6 +245,7 @@ function isSafe(row, col) {
             reasons.push(
                 `Right diagonal attack by (${i+1}, ${pc+1}) → (${row+1}, ${col+1})`
             );
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
         }
     }
 
@@ -194,6 +268,10 @@ function init() {
     stack = [{row:0, col:0}];
     history = [];
     solutions = 0;
+<<<<<<< HEAD
+    allSolutions = [];
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 
     createBoard();
     drawBoard();
@@ -202,11 +280,19 @@ function init() {
     document.getElementById("total").innerText = solutionCount[N] || "Unknown";
     document.getElementById("found").innerText = solutions;
     document.getElementById("desc").innerText = "Initialized. Click Next.";
+<<<<<<< HEAD
+
+    document.getElementById("solutionsContainer").innerHTML = "";
+}
+
+function backtrackOnce() {
+=======
 }
 
 function backtrackOnce() {
     // Remove queen from current row (if any), then pop the frame and remove queen from previous row
     // so it can try the next column.
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
     if (stack.length === 0) return null;
 
     let currentRow = stack[stack.length - 1].row;
@@ -244,7 +330,10 @@ function nextStep() {
         let row = top.row;
         let col = top.col;
 
+<<<<<<< HEAD
+=======
         // If this row has no columns left, backtrack immediately (same click).
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
         if (col >= N) {
             let removed = backtrackOnce();
 
@@ -259,11 +348,17 @@ function nextStep() {
             break;
         }
 
+<<<<<<< HEAD
+        top.col++;
+        highlight = { row, col };
+
+=======
         // Try next column in current row.
         top.col++; // move to next col next time
         highlight = { row, col };
 
         // If we're revisiting the same row (e.g., after finding a solution), clear the old queen first.
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
         if (board[row] !== -1) board[row] = -1;
         
         let result = isSafe(row, col);
@@ -273,6 +368,11 @@ function nextStep() {
 
             if (row === N - 1) {
                 solutions++;
+<<<<<<< HEAD
+                allSolutions.push([...board]);
+
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
                 document.getElementById("found").innerText = solutions;
                 document.getElementById("desc").innerText = "✅ Solution Found!";
             } else {
@@ -283,9 +383,15 @@ function nextStep() {
             break;
         }
 
+<<<<<<< HEAD
+        document.getElementById("desc").innerText =
+            `❌ Not safe at (${row+1}, ${col+1})\n` + result.reasons.join("\n");
+
+=======
         // Not safe at (row, col). If this was the last column, backtrack right now.
         document.getElementById("desc").innerText =
     `❌ Not safe at (${row+1}, ${col+1})\n` + result.reasons.join("\n");
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
         if (top.col >= N) {
             document.getElementById("desc").innerText = `❌ Row ${row} stuck. Backtracking...`;
             continue;
@@ -320,6 +426,10 @@ function resetBoard() {
     stack = [];
     history = [];
     solutions = 0;
+<<<<<<< HEAD
+    allSolutions = [];
+=======
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 
     createBoard();
     drawBoard();
@@ -327,7 +437,66 @@ function resetBoard() {
     document.getElementById("desc").innerText = "Reset done. Click Initialize.";
     document.getElementById("found").innerText = solutions;
     document.getElementById("total").innerText = "-";
+<<<<<<< HEAD
+
+    document.getElementById("solutionsContainer").innerHTML = "";
 }
+
+function startAuto() {
+    if (autoPlayInterval) return;
+
+    autoPlayInterval = setInterval(() => {
+        if (stack.length === 0) {
+            stopAuto();
+            return;
+        }
+        nextStep();
+    }, 500);
+}
+
+function stopAuto() {
+    clearInterval(autoPlayInterval);
+    autoPlayInterval = null;
+}
+
+
+function showSolutions() {
+    const container = document.getElementById("solutionsContainer");
+    container.innerHTML = "";
+
+    if (allSolutions.length === 0) {
+        container.innerHTML = "<p>No solutions found yet!</p>";
+        return;
+    }
+
+    allSolutions.forEach(sol => {
+        let boardDiv = document.createElement("div");
+        boardDiv.classList.add("solution-board");
+        boardDiv.style.gridTemplateColumns = `repeat(${N}, 35px)`;
+
+        for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+                let cell = document.createElement("div");
+                cell.classList.add("solution-cell");
+
+                if ((r + c) % 2 === 0) cell.classList.add("sol-white");
+                else cell.classList.add("sol-black");
+
+                if (sol[r] === c) {
+                    cell.innerHTML = "♛";
+                }
+
+                boardDiv.appendChild(cell);
+            }
+        }
+
+        container.appendChild(boardDiv);
+    });
+}
+
+=======
+}
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
 createBoard();
 </script>
 
@@ -336,4 +505,8 @@ createBoard();
 </footer>
 
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> e964fcb7876640d6306ff39da5d49440fa39c4a9
